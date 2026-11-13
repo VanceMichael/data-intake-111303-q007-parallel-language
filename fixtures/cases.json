@@ -1,0 +1,159 @@
+[
+  {
+    "name": "双向互链但修订滞后",
+    "routes": [
+      {
+        "path": "/zh/a",
+        "body": {
+          "lang": "zh",
+          "point": "lake",
+          "revision": 3,
+          "alternates": [
+            "/ru/a"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "revision": 3,
+              "text": "新水样"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/a",
+        "body": {
+          "lang": "ru",
+          "point": "lake",
+          "revision": 2,
+          "alternates": [
+            "/zh/a"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "sourceRevision": 2,
+              "text": "Проба"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/a"
+      ]
+    },
+    "expected": {
+      "points": {
+        "lake": {
+          "s1": "translation-lag"
+        }
+      }
+    },
+    "required": [
+      "/zh/a",
+      "/ru/a"
+    ]
+  },
+  {
+    "name": "单向同名链接不能强配",
+    "routes": [
+      {
+        "path": "/zh/a",
+        "body": {
+          "lang": "zh",
+          "point": "p1",
+          "revision": 1,
+          "alternates": [
+            "/ru/a"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "text": "同名点"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/a",
+        "body": {
+          "lang": "ru",
+          "point": "p2",
+          "revision": 1,
+          "alternates": [],
+          "segments": [
+            {
+              "anchor": "s1",
+              "text": "同名点"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/a"
+      ]
+    },
+    "expected": {
+      "uncertain": [
+        "/zh/a->/ru/a"
+      ]
+    },
+    "required": [
+      "/ru/a"
+    ]
+  },
+  {
+    "name": "源文新增不是译文删除",
+    "routes": [
+      {
+        "path": "/zh/a",
+        "body": {
+          "lang": "zh",
+          "point": "p1",
+          "revision": 2,
+          "alternates": [
+            "/ru/a"
+          ],
+          "segments": [
+            {
+              "anchor": "new",
+              "text": "新观察"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/a",
+        "body": {
+          "lang": "ru",
+          "point": "p1",
+          "revision": 1,
+          "alternates": [
+            "/zh/a"
+          ],
+          "segments": []
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/a"
+      ]
+    },
+    "expected": {
+      "points": {
+        "p1": {
+          "new": "source-new"
+        }
+      }
+    },
+    "required": [
+      "/zh/a",
+      "/ru/a"
+    ]
+  }
+]
