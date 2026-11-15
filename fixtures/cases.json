@@ -155,5 +155,319 @@
       "/zh/a",
       "/ru/a"
     ]
+  },
+  {
+    "name": "重定向与自链仍可对齐",
+    "routes": [
+      {
+        "path": "/zh/old",
+        "status": 302,
+        "headers": {
+          "location": "/zh/b"
+        },
+        "body": ""
+      },
+      {
+        "path": "/zh/b",
+        "body": {
+          "lang": "zh",
+          "point": "river",
+          "revision": 4,
+          "alternates": [
+            "/zh/b",
+            "/ru/b"
+          ],
+          "segments": [
+            {
+              "anchor": "c1",
+              "revision": 4,
+              "kind": "caption",
+              "text": "旧桥照片"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/b",
+        "body": {
+          "lang": "ru",
+          "point": "river",
+          "revision": 4,
+          "alternates": [
+            "/zh/b"
+          ],
+          "segments": [
+            {
+              "anchor": "c1",
+              "sourceRevision": 4,
+              "kind": "caption",
+              "text": "Фото старого моста"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/old"
+      ]
+    },
+    "expected": {
+      "points": {
+        "river": {
+          "c1": "matched"
+        }
+      },
+      "uncertain": []
+    },
+    "required": [
+      "/zh/old",
+      "/zh/b",
+      "/ru/b"
+    ]
+  },
+  {
+    "name": "源文撤下但译文仍留旧图注",
+    "routes": [
+      {
+        "path": "/zh/c",
+        "body": {
+          "lang": "zh",
+          "point": "well",
+          "revision": 4,
+          "alternates": [
+            "/ru/c"
+          ],
+          "segments": [
+            {
+              "anchor": "k1",
+              "sourceRevision": 5,
+              "text": "井口测量"
+            },
+            {
+              "anchor": "k2",
+              "sourceRevision": 3,
+              "kind": "caption",
+              "text": "旧照片说明"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/c",
+        "body": {
+          "lang": "ru",
+          "point": "well",
+          "revision": 5,
+          "alternates": [
+            "/zh/c"
+          ],
+          "segments": [
+            {
+              "anchor": "k1",
+              "revision": 5,
+              "text": "Замер устья"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/c"
+      ]
+    },
+    "expected": {
+      "points": {
+        "well": {
+          "k1": "matched",
+          "k2": "source-removed"
+        }
+      }
+    },
+    "required": [
+      "/zh/c",
+      "/ru/c"
+    ]
+  },
+  {
+    "name": "锚点跨观察点重用不串点",
+    "routes": [
+      {
+        "path": "/zh/d",
+        "body": {
+          "lang": "zh",
+          "point": "a1",
+          "revision": 2,
+          "alternates": [
+            "/ru/d"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "revision": 2,
+              "text": "东岸"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/d",
+        "body": {
+          "lang": "ru",
+          "point": "a1",
+          "revision": 2,
+          "alternates": [
+            "/zh/d"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "sourceRevision": 2,
+              "text": "Восточный берег"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/zh/e",
+        "body": {
+          "lang": "zh",
+          "point": "a2",
+          "revision": 1,
+          "alternates": [
+            "/ru/x"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "revision": 1,
+              "text": "西洼"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/x",
+        "body": {
+          "lang": "ru",
+          "point": "a2",
+          "revision": 1,
+          "alternates": [],
+          "segments": [
+            {
+              "anchor": "s1",
+              "sourceRevision": 1,
+              "text": "Западная низина"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/d",
+        "/zh/e"
+      ]
+    },
+    "expected": {
+      "points": {
+        "a1": {
+          "s1": "matched"
+        }
+      },
+      "uncertain": [
+        "/zh/e->/ru/x"
+      ]
+    },
+    "required": [
+      "/zh/d",
+      "/ru/d",
+      "/zh/e",
+      "/ru/x"
+    ]
+  },
+  {
+    "name": "一页对应多页合并比对",
+    "routes": [
+      {
+        "path": "/zh/f",
+        "body": {
+          "lang": "zh",
+          "point": "delta",
+          "revision": 3,
+          "alternates": [
+            "/ru/f1",
+            "/ru/f2"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "revision": 2,
+              "text": "汊道一"
+            },
+            {
+              "anchor": "s2",
+              "revision": 3,
+              "text": "汊道二"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/f1",
+        "body": {
+          "lang": "ru",
+          "point": "delta",
+          "revision": 2,
+          "alternates": [
+            "/zh/f"
+          ],
+          "segments": [
+            {
+              "anchor": "s1",
+              "sourceRevision": 2,
+              "text": "Рукав один"
+            }
+          ]
+        }
+      },
+      {
+        "path": "/ru/f2",
+        "body": {
+          "lang": "ru",
+          "point": "delta",
+          "revision": 2,
+          "alternates": [
+            "/zh/f"
+          ],
+          "segments": [
+            {
+              "anchor": "s2",
+              "sourceRevision": 2,
+              "text": "Рукав два"
+            }
+          ]
+        }
+      }
+    ],
+    "input": {
+      "seeds": [
+        "/zh/f"
+      ]
+    },
+    "expected": {
+      "points": {
+        "delta": {
+          "s1": "matched",
+          "s2": "translation-lag"
+        }
+      }
+    },
+    "required": [
+      "/zh/f",
+      "/ru/f1",
+      "/ru/f2"
+    ]
   }
 ]

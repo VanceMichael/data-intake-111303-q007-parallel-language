@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --test test/baseline.test.mjs",
+    "test:incremental": "node --test test/incremental.test.mjs",
     "build": "node scripts/check.mjs",
     "inspect": "node src/inspect.mjs",
     "source": "node src/source.mjs",

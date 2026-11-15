@@ -1,6 +1,6 @@
 # 双语图集页面的段落对应与缺译采集
 
-这是 parallel-language 的 Node.js 项目。现有能力是本地资料源启动、来源检查和接口演练；资料接收工作流由单独的业务模块承载，当前版本不含该模块。
+这是 parallel-language 的 Node.js 项目。现有能力是本地资料源启动、来源检查、接口演练，以及双语资料采集链路（`src/workflow.mjs`）：按语言互链、观察点标识与段落锚点收集中俄页面间的对应证据，输出按观察点查询的结构化结果。
 
 ## 环境
 
@@ -12,12 +12,13 @@
 
 ```sh
 npm test
+npm run test:incremental
 npm run build
 npm run inspect
 npm run source
 ```
 
-`npm test` 检查已有资料源与接口读取。`npm run build` 做全部 JavaScript 源码语法检查，不生成运行时依赖。`npm run source` 启动回环服务并打印地址，`SOURCE_CASE=1 npm run source` 可切换异常场景。
+`npm test` 检查已有资料源与接口读取。`npm run test:incremental` 检查跨次执行行为：旧修订迟到不回退、局部重算不影响其他观察点、读取失败保留已落盘资料、撤下判定可由落盘状态证明。`npm run build` 做全部 JavaScript 源码语法检查，不生成运行时依赖。`npm run source` 启动回环服务并打印地址，`SOURCE_CASE=1 npm run source` 可切换异常场景。
 
 ## 工作流接入
 
@@ -27,6 +28,19 @@ GET 种子页取得 lang/point/revision/alternates/segments；该 JSON 是原站
 
 完整来源约定、输出示例与状态判定见 `docs/source-contract.md`。fixtures 下的资料只用于本地演练，代表不同供方响应或门户状态，不是资料接收器的实现。
 
+## 采集结果结构
+
+`run()` 返回并落盘（stateDir/result.json）的结果按观察点组织：
+
+- `points`：`观察点 -> 锚点 -> 状态`。状态为 `matched`（已对应）、`source-new`（源文新增）、`translation-lag`（译文滞后）、`source-removed`（源文撤下）、`uncertain`（关系不确定）之一；缺译不会记为删除。
+- `evidence`：与 `points` 对应的逐项双侧证据，含两侧页面、语言、页面修订、段落修订/sourceRevision、kind（正文/图注/引用）与原文，以及状态成立的原因。
+- `relations`：已确认的页级关系（双向互链且 point 一致，允许一页对多页）。
+- `uncertain` / `uncertainEvidence`：证据不足的弱线索（格式 源路径->目标路径）及原因，留待人工确认，不做机器翻译或文字相似度强配。
+- `observations`：本次运行的解释性证据，如重定向链、指回自身的语言链接、旧修订迟到、读取失败、同语言多页锚点冲突。
+- `recomputed` / `carried`：本次局部重算的观察点与沿用落盘结果的观察点；未涉及的已确认关系不受影响。
+
+跨次执行状态存于 stateDir/state.json，只按 revision 字段判定新旧，重启后仅复用可追溯依据的进度。
+
 ## 业务核对与短演示
 
 ```sh
@@ -34,6 +48,6 @@ npm run acceptance
 npm run demo
 ```
 
-业务模块接入后运行上述命令。当前版本运行会明确报告业务模块不存在，不把来源测试通过当作接收工作流已完成。acceptance 检查结果、落盘内容和实际来源访问；demo 从干净临时状态启动本地服务，实际执行前三种情况并完整输出结果及请求，不回放记录。每种情形应在 15 秒内完成，整次演示在 75 秒超时后报失败退出，预留在 90 秒内展示的余量。
+业务模块已接入，运行上述命令即可核对。acceptance 检查结果、落盘内容和实际来源访问；demo 从干净临时状态启动本地服务，实际执行前三种情况并完整输出结果及请求，不回放记录。每种情形应在 15 秒内完成，整次演示在 75 秒超时后报失败退出，预留在 90 秒内展示的余量。
 
 容器内执行基线检查：`docker run --rm --network none parallel-language:local npm test`。工作流开发完成后执行 `docker run --rm --network none parallel-language:local npm run demo`。容器内回环端口可用；正式核对过程不连接外部网络。
